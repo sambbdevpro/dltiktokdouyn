@@ -1,0 +1,80 @@
+HUONG DAN CAI DAT MODULE CHO DU AN DLMASS
+=========================================
+
+1) YEU CAU
+- Python >= 3.10
+- Khuyen nghi Python 3.11 hoac 3.12
+- Windows CMD/PowerShell
+
+2) TAO MOI TRUONG AO (KHUYEN NGHI)
+- CMD:
+  py -3.13 -m venv .venv
+  .venv\Scripts\activate
+
+- PowerShell:
+  py -3.11 -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+
+3) CAI DAT CAC GOI PYTHON CAN THIET
+- Nang cap pip:
+  python -m pip install --upgrade pip
+
+- Cai package cua du an (tu pyproject.toml):
+  pip install -e .
+
+Ghi chu:
+- Dependency khai bao trong du an hien tai:
+  - Flask>=3.0.0
+
+4) CAI DAT THEM DE CHAY DAY DU CHUC NANG DOWNLOAD/FALLBACK
+4.1) yt-dlp (BAT BUOC neu dung fallback hoac mp3)
+  pip install -U yt-dlp
+
+4.2) ffmpeg (BAT BUOC neu dung download-mp3)
+- Cach 1 (khuyen nghi): cai qua winget
+  winget install --id Gyan.FFmpeg -e
+
+- Cach 2: tai ban static ffmpeg, giai nen, them thu muc bin vao PATH
+
+Kiem tra:
+  ffmpeg -version
+
+5) KIEM TRA NHANH SAU KHI CAI
+- Kiem tra CLI:
+  set PYTHONPATH=src
+  python -m dlmass.cli --help
+
+- Chay web local (port 5001):
+  start.bat
+
+- Chay web LAN (0.0.0.0:5001):
+  start-api.bat
+
+6) XU LY LOI THUONG GAP
+- Loi "No module named yt_dlp":
+  pip install -U yt-dlp
+
+- Loi ffmpeg khong tim thay:
+  kiem tra ffmpeg da duoc them vao PATH chua, mo lai terminal roi test ffmpeg -version
+
+- Loi API Douyin /api/download tra 400:
+  he thong se fallback sang yt-dlp neu cau hinh mode la api_with_fallback va may da cai yt-dlp
+
+7) CAU HINH GOI Y TRONG dlmass.config.json
+- Dam bao co cac key sau:
+  "douyin_provider_mode": "api_with_fallback"
+  "douyin_api_base_url": "https://apidl.kycaz.com"
+  "douyin_api_timeout_sec": 15
+  "douyin_api_download_prefix": true
+  "douyin_api_with_watermark": false
+
+8) LENH CAI DAT NHANH (COPY/PASTE)
+- CMD:
+  py -3.11 -m venv .venv
+  .venv\Scripts\activate
+  python -m pip install --upgrade pip
+  pip install -e .
+  pip install -U yt-dlp
+
+  REM Cai ffmpeg bang winget (neu chua co)
+  winget install --id Gyan.FFmpeg -e

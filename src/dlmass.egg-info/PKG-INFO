@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: dlmass
+Version: 0.1.0
+Summary: Bulk downloader for YouTube, TikTok, Douyin (video + mp3)
+Requires-Python: >=3.10
+Requires-Dist: Flask>=3.0.0

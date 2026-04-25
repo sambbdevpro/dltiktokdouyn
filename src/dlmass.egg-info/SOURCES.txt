@@ -1,0 +1,15 @@
+pyproject.toml
+src/dlmass/__init__.py
+src/dlmass/cli.py
+src/dlmass/config.py
+src/dlmass/downloader.py
+src/dlmass/io_utils.py
+src/dlmass/parsers.py
+src/dlmass/scanner.py
+src/dlmass/web.py
+src/dlmass.egg-info/PKG-INFO
+src/dlmass.egg-info/SOURCES.txt
+src/dlmass.egg-info/dependency_links.txt
+src/dlmass.egg-info/entry_points.txt
+src/dlmass.egg-info/requires.txt
+src/dlmass.egg-info/top_level.txt

@@ -1,0 +1,4 @@
+# Paste video URLs or channel URLs (one per line)
+https://www.youtube.com/@YouTubeCreators
+https://www.tiktok.com/@scout2015
+https://www.douyin.com/user/MS4wLjABAAAA-example

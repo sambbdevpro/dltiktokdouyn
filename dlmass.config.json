@@ -1,0 +1,19 @@
+{
+  "output_root": "output",
+  "videos_dir": "output/videos",
+  "audio_dir": "output/audio",
+  "metadata_dir": "output/metadata",
+  "archive_file": "output/download_archive.txt",
+  "retries": 2,
+  "cookies_from_browser": null,
+  "cookies_file": null,
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+  "referer": "https://www.douyin.com/",
+  "extractor_args": "douyin:device_id=;web_id=",
+  "douyin_provider_mode": "api_with_fallback",
+  "douyin_api_base_url": "https://apidl.kycaz.com",
+  "douyin_api_timeout_sec": 15,
+  "douyin_api_token": null,
+  "douyin_api_download_prefix": true,
+  "douyin_api_with_watermark": false
+}
