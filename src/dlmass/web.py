@@ -225,7 +225,7 @@ function renderTable(items) {
 
   const thead = document.createElement('thead');
   const headRow = document.createElement('tr');
-  ['', 'Platform', 'Title', 'Uploader', 'Duration(s)'].forEach(text => {
+  ['', 'Platform', 'Title', 'Uploader', 'Duration(s)', 'Video Link'].forEach(text => {
     const th = document.createElement('th');
     th.innerText = text;
     headRow.appendChild(th);
@@ -256,11 +256,25 @@ function renderTable(items) {
     const tdDuration = document.createElement('td');
     tdDuration.innerText = (item.duration === null || item.duration === undefined) ? '' : String(item.duration);
 
+    const tdVideoLink = document.createElement('td');
+    const videoUrl = String(item.video_url || '');
+    if (videoUrl) {
+      const a = document.createElement('a');
+      a.href = videoUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.innerText = 'Open link';
+      tdVideoLink.appendChild(a);
+    } else {
+      tdVideoLink.innerText = '';
+    }
+
     tr.appendChild(tdCheck);
     tr.appendChild(tdPlatform);
     tr.appendChild(tdTitle);
     tr.appendChild(tdUploader);
     tr.appendChild(tdDuration);
+    tr.appendChild(tdVideoLink);
     tbody.appendChild(tr);
   }
 
@@ -342,7 +356,7 @@ def create_app(config_path: Path | None = None) -> Flask:
             if not isinstance(info, dict):
                 continue
             if bool(info.get("temporary")):
-                tmp_path = Path(str(info.get("path", "")))
+                tmp_path = Path(str(info.get("path", ""))).expanduser().resolve()
                 if tmp_path.exists():
                     try:
                         tmp_path.unlink()
@@ -408,14 +422,7 @@ def create_app(config_path: Path | None = None) -> Flask:
             return jsonify({"error": "file does not exist"}), 404
 
         target = target.expanduser().resolve()
-        response = send_file(target, as_attachment=True, download_name=str(info.get("name", target.name)))
-        if bool(info.get("temporary")):
-            download_links.pop(token, None)
-            try:
-                target.unlink()
-            except Exception:
-                pass
-        return response
+        return send_file(target, as_attachment=True, download_name=str(info.get("name", target.name)))
 
     @app.get("/")
     def index():

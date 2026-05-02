@@ -26,16 +26,54 @@ def _run(cmd: list[str]) -> list[str]:
     return existing
 
 
-def _normalize_download_url(url: str) -> str:
-    parsed = parse_url(url)
-    if parsed.platform != "douyin":
+def _normalize_tiktok_url(url: str) -> str:
+    parsed_url = urlparse(url)
+    host = (parsed_url.netloc or "").lower()
+    path = parsed_url.path or ""
+    qs = parse_qs(parsed_url.query)
+
+    if "tiktok.com" not in host:
         return url
 
-    parsed_url = urlparse(url)
-    qs = parse_qs(parsed_url.query)
-    modal_id = (qs.get("modal_id") or [""])[0].strip()
-    if modal_id:
-        return f"https://www.douyin.com/video/{modal_id}"
+    if "/video/" in path and "/@" in path:
+        return url
+
+    video_id = ""
+    path_match = re.search(r"/video/(\d+)", path)
+    if path_match:
+        video_id = path_match.group(1)
+
+    if not video_id:
+        item_id = (qs.get("item_id") or qs.get("video_id") or qs.get("aweme_id") or [""])[0].strip()
+        if item_id.isdigit():
+            video_id = item_id
+
+    if not video_id:
+        numeric_match = re.search(r"/(\d{8,})(?:[/?#]|$)", path)
+        if numeric_match:
+            video_id = numeric_match.group(1)
+
+    if not video_id:
+        return url
+
+    user_match = re.search(r"/@([^/?#]+)", path)
+    user = user_match.group(1) if user_match else "unknown"
+    return f"https://www.tiktok.com/@{user}/video/{video_id}"
+
+
+def _normalize_download_url(url: str) -> str:
+    parsed = parse_url(url)
+    if parsed.platform == "douyin":
+        parsed_url = urlparse(url)
+        qs = parse_qs(parsed_url.query)
+        modal_id = (qs.get("modal_id") or [""])[0].strip()
+        if modal_id:
+            return f"https://www.douyin.com/video/{modal_id}"
+        return url
+
+    if parsed.platform == "tiktok":
+        return _normalize_tiktok_url(url)
+
     return url
 
 
@@ -55,9 +93,6 @@ def _build_yt_dlp_cmd(config: AppConfig, platform: str, include_browser_cookies:
         str(config.retries),
         "--download-archive",
         str(config.archive_file),
-        "--write-info-json",
-        "--write-thumbnail",
-        "--write-description",
         "--print",
         "after_move:filepath",
     ]
@@ -91,18 +126,36 @@ def _sanitize_file_name(name: str) -> str:
     return cleaned or "video"
 
 
+def _has_ffmpeg() -> bool:
+    try:
+        result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
+    except Exception:
+        return False
+    return result.returncode == 0
+
+
 def _download_video_with_yt_dlp(url: str, config: AppConfig, platform: str) -> list[str]:
     download_url = _normalize_download_url(url)
     output_template = str(config.videos_dir / platform / "%(uploader)s" / "%(title)s [%(id)s].%(ext)s")
+    has_ffmpeg = _has_ffmpeg()
+
+    format_selector = "best[ext=mp4][vcodec!=none][acodec!=none]/best[vcodec!=none][acodec!=none]/best"
+    if has_ffmpeg:
+        format_selector = (
+            "best[ext=mp4][vcodec!=none][acodec!=none]/"
+            "bestvideo*+bestaudio/best[vcodec!=none][acodec!=none]/best"
+        )
+
     extra_args = [
         "-f",
-        "bestvideo*+bestaudio/best[ext=mp4]/best",
-        "--merge-output-format",
-        "mp4",
+        format_selector,
         "-o",
         output_template,
         download_url,
     ]
+    if has_ffmpeg:
+        extra_args[2:2] = ["--merge-output-format", "mp4"]
+
     return _run_with_cookie_fallback(config, platform, extra_args)
 
 
@@ -139,6 +192,9 @@ def download_video(url: str, config: AppConfig) -> list[str]:
 
 
 def download_audio_mp3(url: str, config: AppConfig) -> list[str]:
+    if not _has_ffmpeg():
+        raise RuntimeError("ffmpeg chưa được cài trên server. Hãy cài ffmpeg và thêm vào PATH để tải MP3.")
+
     parsed = parse_url(url)
     download_url = _normalize_download_url(url)
     output_template = str(config.audio_dir / parsed.platform / "%(uploader)s" / "%(title)s [%(id)s].%(ext)s")
